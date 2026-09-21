@@ -12,3 +12,7 @@ def obtener_cancha(id_cancha):
             f"No existe una cancha con id {id_cancha}",
         )
     return cancha
+
+
+def listar_canchas(filtros, limit, offset):
+    return repo.listar(filtros, limit, offset)
