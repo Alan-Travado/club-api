@@ -63,3 +63,25 @@ def listar(filtros, limit, offset):
     finally:
         conn.close()
     return filas, total
+
+
+def crear(datos):
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO canchas (nombre, id_deporte, precio_hora, techada, activa) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            (
+                datos["nombre"],
+                datos["id_deporte"],
+                datos["precio_hora"],
+                datos["techada"],
+                datos["activa"],
+            ),
+        )
+        conn.commit()
+        nuevo_id = cursor.lastrowid
+    finally:
+        conn.close()
+    return obtener_por_id(nuevo_id)

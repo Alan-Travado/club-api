@@ -9,3 +9,13 @@ def listar():
         return cursor.fetchall()
     finally:
         conn.close()
+
+
+def existe(id_deporte):
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM deportes WHERE id = %s", (id_deporte,))
+        return cursor.fetchone() is not None
+    finally:
+        conn.close()

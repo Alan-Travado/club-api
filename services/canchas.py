@@ -16,3 +16,7 @@ def obtener_cancha(id_cancha):
 
 def listar_canchas(filtros, limit, offset):
     return repo.listar(filtros, limit, offset)
+
+
+def crear_cancha(datos):
+    return repo.crear(datos)

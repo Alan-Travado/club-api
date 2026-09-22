@@ -10,6 +10,15 @@ def error_parametro(nombre, detalle):
     )
 
 
+def error_campo(nombre, detalle):
+    return ApiError(
+        400,
+        "CAMPO_INVALIDO",
+        "Campo inválido",
+        f"El campo '{nombre}' {detalle}",
+    )
+
+
 def validar_parametros_permitidos(args, permitidos):
     desconocidos = sorted(set(args.keys()) - set(permitidos))
     if desconocidos:
@@ -18,6 +27,24 @@ def validar_parametros_permitidos(args, permitidos):
             "PARAMETRO_DESCONOCIDO",
             "Parámetro desconocido",
             f"Parámetros no admitidos: {', '.join(desconocidos)}",
+        )
+
+
+def validar_cuerpo(body, permitidos):
+    if not isinstance(body, dict) or not body:
+        raise ApiError(
+            400,
+            "CUERPO_INVALIDO",
+            "Cuerpo inválido",
+            "El cuerpo de la solicitud debe ser un objeto JSON no vacío",
+        )
+    desconocidos = sorted(set(body.keys()) - set(permitidos))
+    if desconocidos:
+        raise ApiError(
+            400,
+            "CAMPO_DESCONOCIDO",
+            "Campo desconocido",
+            f"Campos no admitidos: {', '.join(desconocidos)}",
         )
 
 
@@ -51,3 +78,39 @@ def leer_paginacion(args):
     limit = entero(args["_limit"], "_limit", 1, 100) if "_limit" in args else 10
     offset = entero(args["_offset"], "_offset", 0) if "_offset" in args else 0
     return limit, offset
+
+
+def campo_texto_no_vacio(body, nombre, requerido, actual=None):
+    if nombre not in body:
+        if requerido:
+            raise error_campo(nombre, "es obligatorio")
+        return actual
+    valor = body[nombre]
+    if not isinstance(valor, str):
+        raise error_campo(nombre, "debe ser un texto")
+    limpio = valor.strip()
+    if not limpio:
+        raise error_campo(nombre, "no puede quedar vacío")
+    return limpio
+
+
+def campo_entero_positivo(body, nombre, requerido, actual=None):
+    if nombre not in body:
+        if requerido:
+            raise error_campo(nombre, "es obligatorio")
+        return actual
+    valor = body[nombre]
+    if isinstance(valor, bool) or not isinstance(valor, int):
+        raise error_campo(nombre, "debe ser un entero")
+    if valor <= 0:
+        raise error_campo(nombre, "debe ser mayor a cero")
+    return valor
+
+
+def campo_booleano(body, nombre, actual):
+    if nombre not in body:
+        return actual
+    valor = body[nombre]
+    if not isinstance(valor, bool):
+        raise error_campo(nombre, "debe ser true o false")
+    return valor
