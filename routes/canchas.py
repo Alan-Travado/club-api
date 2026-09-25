@@ -31,3 +31,21 @@ def crear_cancha():
 @bp.get("/canchas/<int:id_cancha>")
 def obtener_cancha(id_cancha):
     return jsonify(service.obtener_cancha(id_cancha)), 200
+
+
+
+@bp.patch("/canchas/<int:id_cancha>")
+def actualizar_cancha(id_cancha):
+    body = request.get_json(silent=True)
+    datos = validador.validar_actualizacion(body)
+    
+    service.actualizar_cancha(id_cancha, datos)
+    
+    return "", 204
+
+
+@bp.delete("/canchas/<int:id_cancha>")
+def eliminar_cancha(id_cancha):
+    service.eliminar_cancha(id_cancha)
+    
+    return "", 204
