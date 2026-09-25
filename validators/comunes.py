@@ -46,6 +46,7 @@ def normalizar_y_validar_email(email_raw:str):
             message="Formato de email inválido.",
             description=f"El valor '{email_limpio}' no es una dirección de correo electrónico válida (ejemplo válido: usuario@dominio.com)."
         )
+    return email_limpio
 
     
 
