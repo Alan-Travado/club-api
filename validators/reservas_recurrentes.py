@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 
 from validators.comunes import (
@@ -6,6 +7,9 @@ from validators.comunes import (
     validar_cuerpo,
 )
 
+PATRON_FECHA_HORA = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}-03:00$"
+)
 
 CAMPOS_CREATE = {
     "id_socio",
@@ -19,7 +23,16 @@ def campo_fecha_hora(body, nombre):
     valor = body.get(nombre)
 
     if not isinstance(valor, str):
-        raise error_campo(nombre, "debe ser una fecha y hora válida")
+        raise error_campo(
+            nombre,
+            "debe ser una fecha y hora válida"
+        )
+    
+    if not PATRON_FECHA_HORA.fullmatch(valor):
+        raise error_campo(
+            nombre,
+            "debe tener un formato YYYY-MM-DDTHH:MM:SS.ffffff-03:00"
+        )
 
     try:
         fecha = datetime.fromisoformat(valor)
