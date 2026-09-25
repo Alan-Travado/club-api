@@ -114,3 +114,51 @@ def campo_booleano(body, nombre, actual):
     if not isinstance(valor, bool):
         raise error_campo(nombre, "debe ser true o false")
     return valor
+
+
+import re
+from datetime import datetime
+
+from reglas_horario import ZONA_CLUB
+
+_PATRON_FECHA_HORA = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}-03:00$"
+)
+_PATRON_FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_PATRON_HORA = re.compile(r"^([01]\d|2[0-3]):00:00$")
+
+
+def campo_fecha_hora(body, nombre, requerido, actual=None):
+    if nombre not in body:
+        if requerido:
+            raise error_campo(nombre, "es obligatorio")
+        return actual
+    valor = body[nombre]
+    if not isinstance(valor, str) or not _PATRON_FECHA_HORA.match(valor):
+        raise error_campo(
+            nombre,
+            "debe tener el formato YYYY-MM-DDTHH:MM:SS.ffffff-03:00",
+        )
+    try:
+        return datetime.strptime(valor, "%Y-%m-%dT%H:%M:%S.%f%z")
+    except ValueError as exc:
+        raise error_campo(nombre, "no es una fecha válida") from exc
+
+
+def parametro_fecha(valor, nombre):
+    if not _PATRON_FECHA.match(valor):
+        raise error_parametro(nombre, "el patron de la fecha debe ser YYYY-MM-DD")
+    try:
+        return datetime.strptime(valor, "%Y-%m-%d").date()
+    except ValueError as exc:
+        raise error_parametro(nombre, "no es una fecha válida") from exc
+
+
+def parametro_hora(valor, nombre):
+    if not _PATRON_HORA.match(valor):
+        raise error_parametro(nombre, "el patron de la hora debe ser HH:00:00 (hora en punto)")
+    return int(valor[:2])
+
+
+def combinar_fecha_hora(fecha, hora):
+    return datetime(fecha.year, fecha.month, fecha.day, hora, tzinfo=ZONA_CLUB)
