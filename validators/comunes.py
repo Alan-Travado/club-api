@@ -1,3 +1,4 @@
+import re
 from errors import ApiError
 
 
@@ -17,6 +18,37 @@ def error_campo(nombre, detalle):
         "Campo inválido",
         f"El campo '{nombre}' {detalle}",
     )
+
+EMAIL_REGEX = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+
+def normalizar_y_validar_email(email_raw:str):
+    if not email_raw or not isinstance(email_raw, str):
+        raise ApiError(
+            status=400,
+            code="BAD_REQUEST",
+            message="El campo 'email' es obligatorio y debe ser un texto.",
+            description="No se proporcionó un correo electrónico válido."
+        )
+    
+    email_limpio = email_raw.strip().lower()
+
+    if not email_limpio:
+        raise ApiError(
+            status=400,
+            code="BAD_REQUEST",
+            message="El 'email' no puede estar vacío.",
+            description="El correo electrónico ingresado solo contiene espacios en blanco."
+        )
+    if not re.match(EMAIL_REGEX, email_limpio):
+        raise ApiError(
+            status=400,
+            code="BAD_REQUEST",
+            message="Formato de email inválido.",
+            description=f"El valor '{email_limpio}' no es una dirección de correo electrónico válida (ejemplo válido: usuario@dominio.com)."
+        )
+
+    
+
 
 
 def validar_parametros_permitidos(args, permitidos):
