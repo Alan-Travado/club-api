@@ -1,14 +1,8 @@
-import re
-from datetime import datetime, timedelta
-
 from validators.comunes import (
     campo_entero_positivo,
+    campo_fecha_hora,
     error_campo,
     validar_cuerpo,
-)
-
-PATRON_FECHA_HORA = re.compile(
-    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}-03:00$"
 )
 
 CAMPOS_CREATE = {
@@ -19,31 +13,6 @@ CAMPOS_CREATE = {
     "cantidad_semanas",
 }
 
-def campo_fecha_hora(body, nombre):
-    valor = body.get(nombre)
-
-    if not isinstance(valor, str):
-        raise error_campo(
-            nombre,
-            "debe ser una fecha y hora válida"
-        )
-    
-    if not PATRON_FECHA_HORA.fullmatch(valor):
-        raise error_campo(
-            nombre,
-            "debe tener un formato YYYY-MM-DDTHH:MM:SS.ffffff-03:00"
-        )
-
-    try:
-        fecha = datetime.fromisoformat(valor)
-    except ValueError:
-        raise error_campo(nombre, "debe tener un formato de fecha y hora válido")
-
-    if fecha.utcoffset() != timedelta(hours=-3):
-        raise error_campo(nombre, "debe estar en la zona horaria UTC-3")
-
-    return fecha
-    
 def validar_creacion(body):
     validar_cuerpo(body, CAMPOS_CREATE)
 
@@ -71,8 +40,12 @@ def validar_creacion(body):
             "debe estar entre 2 y 12"
         )
 
-    inicio = campo_fecha_hora(body, "fecha_hora_inicio")
-    fin = campo_fecha_hora(body, "fecha_hora_fin")
+    inicio = campo_fecha_hora(
+        body, "fecha_hora_inicio", requerido=True
+    )
+    fin = campo_fecha_hora(
+        body, "fecha_hora_fin", requerido=True
+    )
 
     if fin <= inicio:
         raise error_campo(
