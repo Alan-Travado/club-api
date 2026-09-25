@@ -3,6 +3,7 @@ from errors import ApiError
 from services.disponibilidad import validador_reserva_nueva as validar_reserva_nueva
 from services.canchas import obtener_cancha
 from services.socios import obtener_socio
+from repositories import reservas_recurrentes as repo_reservas_recurrentes
 
 def validar_recursos(id_cancha, id_socio):
     cancha = obtener_cancha(id_cancha)
@@ -97,3 +98,13 @@ def completar_reservas(cancha, socio, serie):
             "precio_total": precio_hora * duracion_horas,
         })
     return reservas
+
+def construir_reservas(datos):
+    cancha, socio, serie = preparar_serie(datos)
+    reservas = completar_reservas(cancha, socio, serie)
+    return reservas
+
+def crear_reservas_recurrentes(datos):
+    reservas = construir_reservas(datos)
+    creadas = repo_reservas_recurrentes.crear_serie(reservas)
+    return creadas

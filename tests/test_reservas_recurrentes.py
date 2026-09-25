@@ -7,6 +7,8 @@ from services.reservas_recurrentes import (
     validar_recursos,
     preparar_serie,
     completar_reservas,
+    construir_reservas,
+    crear_reservas_recurrentes,
 )
 
 def test_generar_serie_cuatro_semanas():
@@ -346,3 +348,73 @@ def test_completar_reservas_calcula_precio():
     assert reservas[0]["estado"] == "confirmada"
     assert reservas[0]["precio_hora"] == 1000000
     assert reservas[0]["precio_total"] == 2000000
+
+def test_construir_reservas(monkeypatch):
+    zona = timezone(timedelta(hours=-3))
+
+    datos = {
+        "id_socio": 1,
+        "id_cancha": 2,
+        "fecha_hora_inicio": datetime(2026, 10, 15, 18, 0, tzinfo=zona),
+        "fecha_hora_fin": datetime(2026, 10, 15, 20, 0, tzinfo=zona),
+        "cantidad_semanas": 4,
+    }
+
+    cancha = {
+        "id": 2,
+        "activa": True,
+        "precio_hora": 1000000,
+    }
+    
+    socio = {
+        "id": 1,
+        "activo": True,
+    }
+    
+    serie = generar_serie(
+        datos["fecha_hora_inicio"],
+        datos["fecha_hora_fin"],
+        4,
+    )
+
+    monkeypatch.setattr(
+        "services.reservas_recurrentes.preparar_serie",
+        lambda datos: (cancha, socio, serie),
+    )
+
+    reservas = construir_reservas(datos)
+
+    assert len(reservas) == 4
+    assert reservas[0]["estado"] == "confirmada"
+    assert reservas[0]["precio_total"] == 2000000
+
+def test_crear_reservas_recurrentes(monkeypatch):
+    reservas_preparadas = [
+        {"id": None},
+        {"id": None},
+        {"id": None},
+        {"id": None},
+    ]
+
+    reservas_creadas = [
+        {"id": 1},
+        {"id": 2},
+        {"id": 3},
+        {"id": 4},
+    ]
+
+    monkeypatch.setattr(
+        "services.reservas_recurrentes.construir_reservas",
+        lambda datos: reservas_preparadas,
+    )
+
+    monkeypatch.setattr(
+        "services.reservas_recurrentes."
+        "repo_reservas_recurrentes.crear_serie",
+        lambda reservas: reservas_creadas,
+    )
+
+    resultado = crear_reservas_recurrentes({})
+
+    assert resultado == reservas_creadas
+    assert len(resultado) == 4
