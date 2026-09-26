@@ -1,4 +1,5 @@
 from db import get_connection
+from validators import comunes
 
 COLUMNAS = (
     "id, id_socio, id_cancha, fecha_hora_inicio, fecha_hora_fin, "
@@ -120,3 +121,20 @@ def existe_superposicion_en_socio(id_socio, inicio, fin, excluir_id=None):
         return cursor.fetchone() is not None
     finally:
         conn.close()
+
+
+def existe_superposicion_en_bloqueo(id_cancha, fecha, inicio, fin):
+    valores = (id_cancha, fecha, comunes.hora_a_time(fin), comunes.hora_a_time(inicio))
+
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """SELECT 1 FROM bloqueos WHERE id_cancha = %s
+            AND fecha = %s AND hora_inicio < %s AND hora_fin > %s LIMIT 1""",
+            valores,
+        )
+        fila = cursor.fetchone()
+    finally:
+        conn.close()
+    return fila is not None
