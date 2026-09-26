@@ -21,7 +21,7 @@ def validador_reserva_nueva(id_cancha, id_socio, inicio, fin):
             "Ya existe una reserva confirmada para esa cancha que se superpone con ese intervalo",
         )
 
-    if repo_reservas.existe_superposicion_socio(id_socio, inicio_naive, fin_naive):
+    if repo_reservas.existe_superposicion_en_socio(id_socio, inicio_naive, fin_naive):
         raise ApiError(
             409,
             "SOCIO_NO_DISPONIBLE",
