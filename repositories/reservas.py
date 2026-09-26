@@ -1,5 +1,83 @@
 from db import get_connection
 
+COLUMNAS = (
+    "id, id_socio, id_cancha, fecha_hora_inicio, fecha_hora_fin, "
+    "estado, precio_hora, precio_total"
+)
+
+
+def formatear(fila):
+    fila = dict(fila)
+    fila["fecha_hora_inicio"] = _fmt(fila["fecha_hora_inicio"])
+    fila["fecha_hora_fin"] = _fmt(fila["fecha_hora_fin"])
+    return fila
+
+
+def _fmt(valor):
+    return valor.strftime("%Y-%m-%dT%H:%M:%S.%f") + "-03:00"
+
+
+def obtener_por_id(id_reserva):
+    conn = get_connection()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(f"SELECT {COLUMNAS} FROM reservas WHERE id = %s", (id_reserva,))
+        return cursor.fetchone()
+    finally:
+        conn.close()
+
+
+def listar(filtros, limit, offset):
+    condiciones = []
+    valores = []
+    if filtros["id_cancha"] is not None:
+        condiciones.append("id_cancha = %s")
+        valores.append(filtros["id_cancha"])
+    if filtros["id_socio"] is not None:
+        condiciones.append("id_socio = %s")
+        valores.append(filtros["id_socio"])
+    if filtros["estado"] is not None:
+        condiciones.append("estado = %s")
+        valores.append(filtros["estado"])
+    if filtros["fecha_desde"] is not None:
+        condiciones.append("DATE(fecha_hora_inicio) >= %s")
+        valores.append(filtros["fecha_desde"])
+    if filtros["fecha_hasta"] is not None:
+        condiciones.append("DATE(fecha_hora_inicio) <= %s")
+        valores.append(filtros["fecha_hasta"])
+
+    where = ""
+    if condiciones:
+        where = "WHERE " + " AND ".join(condiciones)
+
+    conn = get_connection()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(f"SELECT COUNT(*) AS total FROM reservas {where}", valores)
+        total = cursor.fetchone()["total"]
+        cursor.execute(
+            f"SELECT {COLUMNAS} FROM reservas {where} "
+            "ORDER BY id ASC LIMIT %s OFFSET %s",
+            valores + [limit, offset],
+        )
+        filas = [formatear(f) for f in cursor.fetchall()]
+    finally:
+        conn.close()
+    return filas, total
+
+
+def actualizar_estado(id_reserva, estado):
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE reservas SET estado = %s WHERE id = %s",
+            (estado, id_reserva),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
 
 def existe_superposicion_en_cancha(id_cancha, inicio, fin, excluir_id=None):
     query = (
