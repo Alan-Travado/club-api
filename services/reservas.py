@@ -18,13 +18,21 @@ def cambiar_estado(id_reserva, estado_nuevo, ahora=None):
         )
     if ahora is None:
         ahora = ahora_gmt3()
+    estado_anterior = reserva["estado"]
     if resolver_transicion(
-        reserva["estado"],
+        estado_anterior,
         estado_nuevo,
         reserva["fecha_hora_inicio"],
         reserva["fecha_hora_fin"],
         ahora,
     ):
-        repo.actualizar_estado(id_reserva, estado_nuevo)
+        actualizado = repo.actualizar_estado(id_reserva, estado_nuevo, estado_anterior)
+        if not actualizado:
+            raise ApiError(
+                400,
+                "TRANSICION_NO_PERMITIDA",
+                "Transicion no permitida",
+                "La reserva cambio de estado mientras se procesaba la solicitud",
+            )
         reserva["estado"] = estado_nuevo
     return repo.formatear(reserva)

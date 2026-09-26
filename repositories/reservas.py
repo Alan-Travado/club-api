@@ -66,15 +66,16 @@ def listar(filtros, limit, offset):
     return filas, total
 
 
-def actualizar_estado(id_reserva, estado):
+def actualizar_estado(id_reserva, estado_nuevo, estado_anterior):
     conn = get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "UPDATE reservas SET estado = %s WHERE id = %s",
-            (estado, id_reserva),
+            "UPDATE reservas SET estado = %s WHERE id = %s AND estado = %s",
+            (estado_nuevo, id_reserva, estado_anterior),
         )
         conn.commit()
+        return cursor.rowcount == 1
     finally:
         conn.close()
 
