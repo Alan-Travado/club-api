@@ -11,7 +11,7 @@ def existe_cancha(id_cancha):
         conn.close()
     return fila is not None
 
-def hay_superposicion(filtros):
+def hay_superposicion_con_bloqueo(filtros):
     condiciones = []
     valores = []
  
@@ -79,17 +79,19 @@ def listar(filtros, limit, offset):
 
     conn = get_connection()
     try:
-        parametros = list(valores) + [limit, offset]
- 
         cursor = conn.cursor(dictionary=True)
-        cursor.execute(f'SELECT * FROM bloqueos {where} LIMIT %s OFFSET %s', tuple(parametros))
+        cursor.execute(f'SELECT COUNT(*) AS total FROM bloqueos {where}', tuple(valores),)
+        total = cursor.fetchone()['total']
+
+        parametros = list(valores) + [limit, offset]
+        cursor.execute(f'SELECT * FROM bloqueos {where} ORDER BY id ASC LIMIT %s OFFSET %s', tuple(parametros),)
         filas = cursor.fetchall()
         filas = [comunes.fechas_a_texto(fila) for fila in filas]
 
     finally:
         conn.close()
  
-    return filas, len(filas)
+    return filas, total
 
 def eliminar(id_bloqueo):
     conn = get_connection()
