@@ -117,7 +117,7 @@ def campo_booleano(body, nombre, actual):
 
 
 import re
-from datetime import datetime
+from datetime import datetime, date, time, timedelta
 
 from reglas_horario import ZONA_CLUB
 
@@ -127,6 +127,11 @@ _PATRON_FECHA_HORA = re.compile(
 _PATRON_FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _PATRON_HORA = re.compile(r"^([01]\d|2[0-3]):00:00$")
 
+def fechas_a_texto(fila):
+    for clave, valor in fila.items():
+        if isinstance(valor, (date, time, timedelta)):
+            fila[clave] = str(valor)
+    return fila
 
 def campo_fecha_hora(body, nombre, requerido, actual=None):
     if nombre not in body:

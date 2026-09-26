@@ -1,16 +1,5 @@
 from db import get_connection
-
-from datetime import (
-    date,
-    time,
-    timedelta,
-)
-
-def _fechas_a_texto(fila):
-    for clave, valor in fila.items():
-        if isinstance(valor, (date, time, timedelta)):
-            fila[clave] = str(valor)
-    return fila
+from validators import comunes
 
 def existe_cancha(id_cancha):
     conn = get_connection()
@@ -95,7 +84,7 @@ def listar(filtros, limit, offset):
         cursor = conn.cursor(dictionary=True)
         cursor.execute(f'SELECT * FROM bloqueos {where} LIMIT %s OFFSET %s', tuple(parametros))
         filas = cursor.fetchall()
-        filas = [_fechas_a_texto(fila) for fila in filas]
+        filas = [comunes.fechas_a_texto(fila) for fila in filas]
 
     finally:
         conn.close()
