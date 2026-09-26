@@ -149,9 +149,11 @@ def campo_fecha_hora(body, nombre, requerido, actual=None):
     except ValueError as exc:
         raise error_campo(nombre, "no es una fecha válida") from exc
 
-def campo_fecha(body, nombre):
+def campo_fecha(body, nombre, requerido, actual=None):
     if nombre not in body:
-        raise error_campo(nombre, 'es obligatorio')
+        if requerido:
+            raise error_campo(nombre, 'es obligatorio')
+        return actual
     valor = body[nombre]
     if not isinstance(valor, str):
         raise error_campo(nombre, 'debe ser un texto con formato YYYY-MM-DD')
@@ -160,9 +162,11 @@ def campo_fecha(body, nombre):
     except Exception:
         raise error_campo(nombre, 'debe tener el formato YYYY-MM-DD')
 
-def campo_hora(body, nombre):
+def campo_hora(body, nombre,requerido, actual=None):
     if nombre not in body:
-        raise error_campo(nombre, 'es obligatorio')
+        if requerido:
+            raise error_campo(nombre, 'es obligatorio')
+        return actual
     valor = body[nombre]
     if not isinstance(valor, str):
         raise error_campo(nombre, 'debe ser un texto con formato HH:00:00')
@@ -186,5 +190,13 @@ def parametro_hora(valor, nombre):
     return int(valor[:2])
 
 
+def combinar_fecha_hora(fecha, hora):
+    return datetime(fecha.year, fecha.month, fecha.day, hora, tzinfo=ZONA_CLUB)
+
+
+def hora_a_time(hora):
+    return time(hour=hora)
+
+ 
 def combinar_fecha_hora(fecha, hora):
     return datetime(fecha.year, fecha.month, fecha.day, hora, tzinfo=ZONA_CLUB)

@@ -32,7 +32,7 @@ def validar_filtros_listado(args):
     if 'id_cancha' in args:
         filtros['id_cancha'] = entero(args['id_cancha'], 'id_cancha', 1)
     if 'fecha' in args:
-        filtros['fecha'] = parametro_fecha(args['fecha'])
+        filtros['fecha'] = parametro_fecha(args['fecha'], 'fecha')
 
     return filtros, limit, offset
 
