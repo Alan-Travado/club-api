@@ -25,7 +25,7 @@ def _error(codigo, mensaje, detalle):
     return ApiError(400, codigo, mensaje, detalle)
 
 
-def validar_intervalo(inicio, fin):
+def validar_intervalo(inicio, fin, limite_duracion=True):
     """
     inicio y fin deben ser datetime "aware" (con tzinfo), ya parseados.
     Lanza ApiError si el intervalo no cumple las reglas del club.
@@ -61,14 +61,15 @@ def validar_intervalo(inicio, fin):
             f"El club atiende de {HORA_APERTURA:02d}:00 a {HORA_CIERRE:02d}:00",
         )
 
-    duracion_horas = (fin - inicio).total_seconds() / 3600
-    if duracion_horas < DURACION_MINIMA_HORAS or duracion_horas > DURACION_MAXIMA_HORAS:
-        raise _error(
-            "DURACION_INVALIDA",
-            "Duración inválida",
-            f"Las reservas duran entre {DURACION_MINIMA_HORAS} y "
-            f"{DURACION_MAXIMA_HORAS} horas completas",
-        )
+    if limite_duracion:
+        duracion_horas = (fin - inicio).total_seconds() / 3600
+        if duracion_horas < DURACION_MINIMA_HORAS or duracion_horas > DURACION_MAXIMA_HORAS:
+            raise _error(
+                "DURACION_INVALIDA",
+                "Duración inválida",
+                f"Las reservas duran entre {DURACION_MINIMA_HORAS} y "
+                f"{DURACION_MAXIMA_HORAS} horas completas",
+            )
 
     if inicio <= ahora():
         raise _error(

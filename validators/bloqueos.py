@@ -7,10 +7,10 @@ from validators.comunes import (
     validar_cuerpo,
     validar_parametros_permitidos,
     error_campo,
-    campo_fecha_hora,
     parametro_fecha,
-    parametro_hora,
     combinar_fecha_hora,
+    campo_fecha,
+    campo_hora,
 )
 import reglas_horario
 
@@ -32,7 +32,7 @@ def validar_filtros_listado(args):
     if 'id_cancha' in args:
         filtros['id_cancha'] = entero(args['id_cancha'], 'id_cancha', 1)
     if 'fecha' in args:
-        filtros['fecha'] = campo_fecha_hora(args['fecha'])
+        filtros['fecha'] = parametro_fecha(args['fecha'])
 
     return filtros, limit, offset
 
@@ -40,17 +40,16 @@ def validar_creacion(body):
     validar_cuerpo(body, CAMPOS_CREATE)
 
     id_cancha = campo_entero_positivo(body, 'id_cancha', requerido=True)
-    fecha = parametro_fecha(body, 'fecha', requerido=True)
-    hora_inicio = parametro_hora(body, 'hora_inicio', requerido=True)
-    hora_fin = parametro_hora(body, 'hora_fin', requerido=True)
+    fecha = campo_fecha(body, 'fecha', requerido=True)
+    hora_inicio = campo_hora(body, 'hora_inicio', requerido=True)
+    hora_fin = campo_hora(body, 'hora_fin', requerido=True)
     motivo = campo_texto_no_vacio(body, 'motivo', requerido=True)
 
     fecha_inicio = combinar_fecha_hora(fecha, hora_inicio)
     fecha_fin = combinar_fecha_hora(fecha, hora_fin)
 
     _validar_rango_horario(hora_inicio, hora_fin)
-
-    reglas_horario.validar_intervalo(fecha_inicio, fecha_fin)
+    reglas_horario.validar_intervalo(fecha_inicio, fecha_fin, limite_duracion=False)
 
     return{
         'id_cancha': id_cancha,
