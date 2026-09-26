@@ -117,7 +117,7 @@ def campo_booleano(body, nombre, actual):
 
 
 import re
-from datetime import datetime
+from datetime import datetime, date, time, timedelta
 
 from reglas_horario import ZONA_CLUB
 
@@ -127,6 +127,11 @@ _PATRON_FECHA_HORA = re.compile(
 _PATRON_FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _PATRON_HORA = re.compile(r"^([01]\d|2[0-3]):00:00$")
 
+def fechas_a_texto(fila):
+    for clave, valor in fila.items():
+        if isinstance(valor, (date, time, timedelta)):
+            fila[clave] = str(valor)
+    return fila
 
 def campo_fecha_hora(body, nombre, requerido, actual=None):
     if nombre not in body:
@@ -144,6 +149,31 @@ def campo_fecha_hora(body, nombre, requerido, actual=None):
     except ValueError as exc:
         raise error_campo(nombre, "no es una fecha válida") from exc
 
+def campo_fecha(body, nombre, requerido, actual=None):
+    if nombre not in body:
+        if requerido:
+            raise error_campo(nombre, 'es obligatorio')
+        return actual
+    valor = body[nombre]
+    if not isinstance(valor, str):
+        raise error_campo(nombre, 'debe ser un texto con formato YYYY-MM-DD')
+    try:
+        return parametro_fecha(valor, nombre)
+    except Exception:
+        raise error_campo(nombre, 'debe tener el formato YYYY-MM-DD')
+
+def campo_hora(body, nombre,requerido, actual=None):
+    if nombre not in body:
+        if requerido:
+            raise error_campo(nombre, 'es obligatorio')
+        return actual
+    valor = body[nombre]
+    if not isinstance(valor, str):
+        raise error_campo(nombre, 'debe ser un texto con formato HH:00:00')
+    try:
+        return parametro_hora(valor, nombre)
+    except Exception:
+        raise error_campo(nombre, 'debe tener el formato HH:00:00 (hora en punto)')
 
 def parametro_fecha(valor, nombre):
     if not _PATRON_FECHA.match(valor):
@@ -160,5 +190,13 @@ def parametro_hora(valor, nombre):
     return int(valor[:2])
 
 
+def combinar_fecha_hora(fecha, hora):
+    return datetime(fecha.year, fecha.month, fecha.day, hora, tzinfo=ZONA_CLUB)
+
+
+def hora_a_time(hora):
+    return time(hour=hora)
+
+ 
 def combinar_fecha_hora(fecha, hora):
     return datetime(fecha.year, fecha.month, fecha.day, hora, tzinfo=ZONA_CLUB)

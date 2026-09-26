@@ -1,16 +1,5 @@
 from db import get_connection
-
-from datetime import (
-    date,
-    time,
-    timedelta,
-)
-
-def _fechas_a_texto(fila):
-    for clave, valor in fila.items():
-        if isinstance(valor, (date, time, timedelta)):
-            fila[clave] = str(valor)
-    return fila
+from validators import comunes
 
 def existe_cancha(id_cancha):
     conn = get_connection()
@@ -22,7 +11,7 @@ def existe_cancha(id_cancha):
         conn.close()
     return fila is not None
 
-def hay_superposicion(filtros):
+def hay_superposicion_con_bloqueo(filtros):
     condiciones = []
     valores = []
  
@@ -34,9 +23,9 @@ def hay_superposicion(filtros):
         valores.append(filtros['fecha'])
     if filtros.get('hora_inicio') is not None and filtros.get('hora_fin') is not None:
         condiciones.append('hora_inicio < %s')
-        valores.append(filtros['hora_fin'])
+        valores.append(comunes.hora_a_time(filtros['hora_fin']))
         condiciones.append('hora_fin > %s')
-        valores.append(filtros['hora_inicio'])
+        valores.append(comunes.hora_a_time(filtros['hora_inicio']))
  
     where = ''
     if condiciones:
@@ -52,6 +41,25 @@ def hay_superposicion(filtros):
  
     return fila is not None
 
+def hay_superposicion_con_reserva(id_cancha, fecha, hora_inicio, hora_fin):
+    fecha_inicio = comunes.combinar_fecha_hora(fecha, hora_inicio)
+    fecha_fin = comunes.combinar_fecha_hora(fecha, hora_fin)
+
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """SELECT 1 FROM reservas 
+            WHERE id_cancha = %s AND estado = 'confirmada'
+            AND fecha_hora_inicio < %s AND fecha_hora_fin > %s LIMIT 1""",
+            (id_cancha, fecha_fin, fecha_inicio),
+        )
+        fila = cursor.fetchone()
+    finally:
+        conn.close()
+
+    return fila is not None
+ 
 def crear(datos):
     conn=get_connection()
     try:
@@ -61,8 +69,8 @@ def crear(datos):
             (
                 datos['id_cancha'],
                 datos['fecha'],
-                datos['hora_inicio'],
-                datos['hora_fin'],
+                comunes.hora_a_time(datos['hora_inicio']),
+                comunes.hora_a_time(datos['hora_fin']),
                 datos['motivo'],
             ),
         )
@@ -90,17 +98,19 @@ def listar(filtros, limit, offset):
 
     conn = get_connection()
     try:
-        parametros = list(valores) + [limit, offset]
- 
         cursor = conn.cursor(dictionary=True)
-        cursor.execute(f'SELECT * FROM bloqueos {where} LIMIT %s OFFSET %s', tuple(parametros))
+        cursor.execute(f'SELECT COUNT(*) AS total FROM bloqueos {where}', tuple(valores),)
+        total = cursor.fetchone()['total']
+
+        parametros = list(valores) + [limit, offset]
+        cursor.execute(f'SELECT * FROM bloqueos {where} ORDER BY id ASC LIMIT %s OFFSET %s', tuple(parametros),)
         filas = cursor.fetchall()
-        filas = [_fechas_a_texto(fila) for fila in filas]
+        filas = [comunes.fechas_a_texto(fila) for fila in filas]
 
     finally:
         conn.close()
  
-    return filas, len(filas)
+    return filas, total
 
 def eliminar(id_bloqueo):
     conn = get_connection()
