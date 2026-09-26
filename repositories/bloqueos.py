@@ -1,16 +1,5 @@
 from db import get_connection
-
-from datetime import (
-    date,
-    time,
-    timedelta,
-)
-
-def _fechas_a_texto(fila):
-    for clave, valor in fila.items():
-        if isinstance(valor, (date, time, timedelta)):
-            fila[clave] = str(valor)
-    return fila
+from validators import comunes
 
 def existe_cancha(id_cancha):
     conn = get_connection()
@@ -22,7 +11,7 @@ def existe_cancha(id_cancha):
         conn.close()
     return fila is not None
 
-def hay_superposicion(filtros):
+def hay_superposicion_con_bloqueo(filtros):
     condiciones = []
     valores = []
  
@@ -90,17 +79,19 @@ def listar(filtros, limit, offset):
 
     conn = get_connection()
     try:
-        parametros = list(valores) + [limit, offset]
- 
         cursor = conn.cursor(dictionary=True)
-        cursor.execute(f'SELECT * FROM bloqueos {where} LIMIT %s OFFSET %s', tuple(parametros))
+        cursor.execute(f'SELECT COUNT(*) AS total FROM bloqueos {where}', tuple(valores),)
+        total = cursor.fetchone()['total']
+
+        parametros = list(valores) + [limit, offset]
+        cursor.execute(f'SELECT * FROM bloqueos {where} ORDER BY id ASC LIMIT %s OFFSET %s', tuple(parametros),)
         filas = cursor.fetchall()
-        filas = [_fechas_a_texto(fila) for fila in filas]
+        filas = [comunes.fechas_a_texto(fila) for fila in filas]
 
     finally:
         conn.close()
  
-    return filas, len(filas)
+    return filas, total
 
 def eliminar(id_bloqueo):
     conn = get_connection()
