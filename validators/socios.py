@@ -1,5 +1,3 @@
-import re
-
 from validators.comunes import (
     booleano,
     campo_booleano,
@@ -9,13 +7,12 @@ from validators.comunes import (
     texto_no_vacio,
     validar_cuerpo,
     validar_parametros_permitidos,
+    normalizar_y_validar_email,
 )
 
 PARAMS_LISTADO = {"nombre", "activo", "_limit", "_offset"}
 CAMPOS_CREATE = {"nombre", "email"}
 CAMPOS_UPDATE = {"nombre", "email", "activo"}
-
-EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 def validar_filtros_listado(args):
@@ -34,23 +31,13 @@ def validar_filtros_listado(args):
     return filtros, limit, offset
 
 
-def _normalizar_email(valor, nombre):
-    if not isinstance(valor, str):
-        raise error_campo(nombre, "debe ser un texto")
-    limpio = valor.strip().lower()
-    if not limpio:
-        raise error_campo(nombre, "no puede quedar vacío")
-    if not EMAIL_RE.fullmatch(limpio):
-        raise error_campo(nombre, "tiene un formato inválido")
-    return limpio
-
-
 def campo_email(body, nombre, requerido, actual=None):
     if nombre not in body:
         if requerido:
             raise error_campo(nombre, "es obligatorio")
         return actual
-    return _normalizar_email(body[nombre], nombre)
+
+    return normalizar_y_validar_email(body[nombre])
 
 
 def validar_creacion(body):
