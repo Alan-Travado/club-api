@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 
 from services import reservas_recurrentes as service
 from validators import reservas_recurrentes as validador
-
+from validators.comunes import validar_sin_parametros
 
 bp = Blueprint("reservas_recurrentes", __name__)
 
@@ -29,6 +29,7 @@ def serializar_reserva(reserva):
 
 @bp.post("/reservas/recurrentes")
 def crear_reservas_recurrentes():
+    validar_sin_parametros(request.args)
     body = request.get_json(silent=True)
 
     datos = validador.validar_creacion(body)

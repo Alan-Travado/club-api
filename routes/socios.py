@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request
 from paginacion import armar_links
 from services import socios as service
 from validators import socios as validador
+from validators.comunes import validar_sin_parametros
 
 bp = Blueprint("socios", __name__)
 
@@ -22,6 +23,7 @@ def listar_socios():
 
 @bp.post("/socios")
 def crear_socio():
+    validar_sin_parametros(request.args)
     body = request.get_json(silent=True)
     datos = validador.validar_creacion(body)
     nuevo = service.crear_socio(datos)
@@ -30,11 +32,13 @@ def crear_socio():
 
 @bp.get("/socios/<int:id_socio>")
 def obtener_socio(id_socio):
+    validar_sin_parametros(request.args)
     return jsonify(service.obtener_socio(id_socio)), 200
 
 
 @bp.patch("/socios/<int:id_socio>")
 def actualizar_socio(id_socio):
+    validar_sin_parametros(request.args)
     body = request.get_json(silent=True)
     actual = service.obtener_socio(id_socio)
     datos = validador.validar_actualizacion(body, actual)

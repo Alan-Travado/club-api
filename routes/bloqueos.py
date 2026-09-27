@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify,request
 from paginacion import armar_links
 from services import bloqueos as service
 from validators import bloqueos as validador
-from repositories import bloqueos as repo
+from validators.comunes import validar_sin_parametros
 
 bp = Blueprint('bloqueos', __name__)
 
@@ -21,6 +21,7 @@ def listar_bloqueos():
 
 @bp.post('/bloqueos')
 def crear_bloqueo():
+    validar_sin_parametros(request.args)
     body = request.get_json(silent=True)
     datos = validador.validar_creacion(body)
     nuevo = service.crear_bloqueo(datos)
@@ -28,5 +29,6 @@ def crear_bloqueo():
 
 @bp.delete('/bloqueos/<int:id_bloqueo>')
 def eliminar_bloqueo(id_bloqueo):
+    validar_sin_parametros(request.args)
     service.eliminar_bloqueo(id_bloqueo)
     return '', 204

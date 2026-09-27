@@ -16,7 +16,7 @@ from validators.comunes import (
 )
 
 PARAMS_LISTADO = {"id_deporte", "nombre", "techada", "activa", "_limit", "_offset"}
-PARAMS_DISPONIBILIDAD = {"fecha", "hora_inicio", "hora_fin", "id_deporte", "tachada", "_limit", "_offset"}
+PARAMS_DISPONIBILIDAD = {"fecha", "hora_inicio", "hora_fin", "id_deporte", "techada", "_limit", "_offset"}
 CAMPOS_CREATE = {"nombre", "id_deporte", "precio_hora", "techada", "activa"}
 CAMPOS_UPDATE = {"nombre", "precio_hora", "techada", "activa"}
 
