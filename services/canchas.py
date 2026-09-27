@@ -1,6 +1,6 @@
 from errors import ApiError
 from repositories import canchas as repo
-
+from reglas_horario import a_naive, validar_intervalo
 
 def obtener_cancha(id_cancha):
     cancha = repo.obtener_por_id(id_cancha)
@@ -38,3 +38,17 @@ def eliminar_cancha(id_cancha):
         )
 
     repo.eliminar(id_cancha)
+
+def listar_canchas_disponibles(filtros, inicio, fin, limit, offset):
+    validar_intervalo(inicio, fin)
+
+    inicio_naive = a_naive(inicio)
+    fin_naive = a_naive(fin)
+
+    return repo.listar_disponibles(
+        filtros,
+        inicio_naive,
+        fin_naive,
+        limit,
+        offset,
+    )

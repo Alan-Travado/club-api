@@ -1,5 +1,6 @@
 from db import get_connection
 from validators import comunes
+from reglas_horario import a_naive
 
 COLUMNAS = (
     "id, id_socio, id_cancha, fecha_hora_inicio, fecha_hora_fin, "
@@ -27,6 +28,47 @@ def obtener_por_id(id_reserva):
     finally:
         conn.close()
 
+def crear(datos):
+    conn = get_connection()
+
+    try:
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO reservas (
+                id_socio,
+                id_cancha,
+                fecha_hora_inicio,
+                fecha_hora_fin,
+                estado,
+                precio_hora,
+                precio_total
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                datos["id_socio"],
+                datos["id_cancha"],
+                a_naive(datos["fecha_hora_inicio"]),
+                a_naive(datos["fecha_hora_fin"]),
+                datos["estado"],
+                datos["precio_hora"],
+                datos["precio_total"],
+            ),
+        )
+
+        nuevo_id = cursor.lastrowid
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+    return formatear(obtener_por_id(nuevo_id))
 
 def listar(filtros, limit, offset):
     condiciones = []

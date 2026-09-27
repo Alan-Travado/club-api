@@ -18,6 +18,17 @@ def listar_reservas():
         {"reservas": reservas, "_links": armar_links(limit, offset, total)}
     ), 200
 
+@bp.post("/reservas")
+def crear_reserva():
+    body = request.get_json(silent=True)
+    datos = validador.validar_creacion(body)
+    nueva = service.crear_reserva(datos)
+
+    return jsonify(nueva), 201
+
+@bp.get("/reservas/<int:id_reserva>")
+def obtener_reserva(id_reserva):
+    return jsonify(service.obtener_reserva(id_reserva)), 200
 
 @bp.put("/reservas/<int:id_reserva>/estado")
 def establecer_estado(id_reserva):

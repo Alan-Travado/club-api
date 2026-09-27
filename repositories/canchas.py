@@ -134,3 +134,80 @@ def eliminar(id_cancha):
         conn.commit()
     finally:
         conn.close()
+
+def listar_disponibles(filtros, inicio, fin, limit, offset):
+    condiciones = ["c.activa = TRUE"]
+    valores = []
+
+    if filtros["id_deporte"] is not None:
+        condiciones.append("c.id_deporte = %s")
+        valores.append(filtros["id_deporte"])
+
+    if filtros["techada"] is not None:
+        condiciones.append("c.techada = %s")
+        valores.append(filtros["techada"])
+
+    condiciones.append(
+        """
+        NOT EXISTS (
+            SELECT 1
+            FROM reservas r
+            WHERE r.id_cancha = c.id
+              AND r.estado = 'confirmada'
+              AND r.fecha_hora_inicio < %s
+              AND r.fecha_hora_fin > %s
+        )
+        """
+    )
+    valores.extend([fin, inicio])
+
+    condiciones.append(
+        """
+        NOT EXISTS (
+            SELECT 1
+            FROM bloqueos b
+            WHERE b.id_cancha = c.id
+              AND b.fecha = DATE(%s)
+              AND b.hora_inicio < TIME(%s)
+              AND b.hora_fin > TIME(%s)
+        )
+        """
+    )
+    valores.extend([inicio, fin, inicio])
+
+    where = "WHERE " + " AND ".join(condiciones)
+
+    conn = get_connection()
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            f"SELECT COUNT(*) AS total FROM canchas c {where}",
+            valores,
+        )
+        total = cursor.fetchone()["total"]
+
+        cursor.execute(
+            f"""
+            SELECT
+                c.id,
+                c.nombre,
+                c.id_deporte,
+                c.precio_hora,
+                c.techada,
+                c.activa
+            FROM canchas c
+            {where}
+            ORDER BY c.id ASC
+            LIMIT %s OFFSET %s
+            """,
+            valores + [limit, offset],
+        )
+
+        filas = [_normalizar(fila) for fila in cursor.fetchall()]
+
+    finally:
+        conn.close()
+
+    return filas, total

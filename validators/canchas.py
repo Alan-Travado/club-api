@@ -10,9 +10,13 @@ from validators.comunes import (
     texto_no_vacio,
     validar_cuerpo,
     validar_parametros_permitidos,
+    parametro_fecha,
+    parametro_hora,
+    combinar_fecha_hora,
 )
 
 PARAMS_LISTADO = {"id_deporte", "nombre", "techada", "activa", "_limit", "_offset"}
+PARAMS_DISPONIBILIDAD = {"fecha", "hora_inicio", "hora_fin", "id_deporte", "tachada", "_limit", "_offset"}
 CAMPOS_CREATE = {"nombre", "id_deporte", "precio_hora", "techada", "activa"}
 CAMPOS_UPDATE = {"nombre", "precio_hora", "techada", "activa"}
 
@@ -102,3 +106,59 @@ def validar_actualizacion(body):
         )
 
     return datos
+
+def validar_disponibilidad(args):
+    validar_parametros_permitidos(args, PARAMS_DISPONIBILIDAD)
+
+    if "fecha" not in args:
+        raise ApiError(
+            400,
+            "PARAMETRO_FALTANTE",
+            "Parámetro faltante",
+            "El parámetro 'fecha' es obligatorio",
+        )
+
+    if "hora_inicio" not in args:
+        raise ApiError(
+            400,
+            "PARAMETRO_FALTANTE",
+            "Parámetro faltante",
+            "El parámetro 'hora_inicio' es obligatorio",
+        )
+
+    if "hora_fin" not in args:
+        raise ApiError(
+            400,
+            "PARAMETRO_FALTANTE",
+            "Parámetro faltante",
+            "El parámetro 'hora_fin' es obligatorio",
+        )
+
+    fecha = parametro_fecha(args["fecha"], "fecha")
+    hora_inicio = parametro_hora(args["hora_inicio"], "hora_inicio")
+    hora_fin = parametro_hora(args["hora_fin"], "hora_fin")
+
+    inicio = combinar_fecha_hora(fecha, hora_inicio)
+    fin = combinar_fecha_hora(fecha, hora_fin)
+
+    filtros = {
+        "id_deporte": None,
+        "techada": None,
+    }
+
+    if "id_deporte" in args:
+        filtros["id_deporte"] = entero(
+            args["id_deporte"],
+            "id_deporte",
+            1,
+        )
+
+    if "techada" in args:
+        filtros["techada"] = booleano(
+            args["techada"],
+            "techada",
+        )
+
+    limit, offset = leer_paginacion(args)
+
+    return filtros, inicio, fin, limit, offset

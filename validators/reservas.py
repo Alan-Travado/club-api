@@ -2,13 +2,16 @@ from datetime import datetime
 
 from errors import ApiError
 from validators.comunes import (
+    campo_fecha_hora,
     entero,
     error_campo,
     error_parametro,
     leer_paginacion,
     validar_cuerpo,
     validar_parametros_permitidos,
+    campo_entero_positivo,
 )
+from validators.socios import CAMPOS_CREATE
 
 PARAMS_LISTADO = {
     "id_cancha",
@@ -20,6 +23,7 @@ PARAMS_LISTADO = {
     "_offset",
 }
 ESTADOS = {"confirmada", "cancelada", "finalizada"}
+CAMPOS_CREATE = {"id_socio", "id_cancha", "fecha_hora_inicio", "fecha_hora_fin"}
 
 
 def validar_filtros_listado(args):
@@ -78,3 +82,29 @@ def _fecha(valor, nombre):
         return datetime.strptime(valor, "%Y-%m-%d").date()
     except ValueError:
         raise error_parametro(nombre, "debe ser una fecha con formato YYYY-MM-DD")
+
+def validar_creacion(body):
+    validar_cuerpo(body, CAMPOS_CREATE)
+
+    return {
+        "id_socio": campo_entero_positivo(
+            body,
+            "id_socio",
+            requerido=True,
+        ),
+        "id_cancha": campo_entero_positivo(
+            body,
+            "id_cancha",
+            requerido=True,
+        ),
+        "fecha_hora_inicio": campo_fecha_hora(
+            body,
+            "fecha_hora_inicio",
+            requerido=True,
+        ),
+        "fecha_hora_fin": campo_fecha_hora(
+            body,
+            "fecha_hora_fin",
+            requerido=True
+        ),
+    }
