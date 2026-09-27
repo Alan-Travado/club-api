@@ -1,6 +1,15 @@
 import re
 from errors import ApiError
 
+from datetime import datetime, date, time, timedelta
+from reglas_horario import ZONA_CLUB
+
+_PATRON_FECHA_HORA = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}-03:00$"
+)
+_PATRON_FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_PATRON_HORA = re.compile(r"^([01]\d|2[0-3]):00:00$")
+EMAIL_REGEX = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
 def error_parametro(nombre, detalle):
     return ApiError(
@@ -18,8 +27,6 @@ def error_campo(nombre, detalle):
         "Campo inválido",
         f"El campo '{nombre}' {detalle}",
     )
-
-EMAIL_REGEX = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
 
 def normalizar_y_validar_email(email_raw):
@@ -47,8 +54,10 @@ def validar_parametros_permitidos(args, permitidos):
             f"Parámetros no admitidos: {', '.join(desconocidos)}",
         )
 
+
 def validar_sin_parametros(args):
     validar_parametros_permitidos(args, set())
+
 
 def validar_cuerpo(body, permitidos):
     if not isinstance(body, dict) or not body:
@@ -136,22 +145,12 @@ def campo_booleano(body, nombre, actual):
     return valor
 
 
-import re
-from datetime import datetime, date, time, timedelta
-
-from reglas_horario import ZONA_CLUB
-
-_PATRON_FECHA_HORA = re.compile(
-    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}-03:00$"
-)
-_PATRON_FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-_PATRON_HORA = re.compile(r"^([01]\d|2[0-3]):00:00$")
-
 def fechas_a_texto(fila):
     for clave, valor in fila.items():
         if isinstance(valor, (date, time, timedelta)):
             fila[clave] = str(valor)
     return fila
+
 
 def campo_fecha_hora(body, nombre, requerido, actual=None):
     if nombre not in body:
@@ -169,31 +168,34 @@ def campo_fecha_hora(body, nombre, requerido, actual=None):
     except ValueError as exc:
         raise error_campo(nombre, "no es una fecha válida") from exc
 
+
 def campo_fecha(body, nombre, requerido, actual=None):
     if nombre not in body:
         if requerido:
-            raise error_campo(nombre, 'es obligatorio')
+            raise error_campo(nombre, "es obligatorio")
         return actual
     valor = body[nombre]
     if not isinstance(valor, str):
-        raise error_campo(nombre, 'debe ser un texto con formato YYYY-MM-DD')
+        raise error_campo(nombre, "debe ser un texto con formato YYYY-MM-DD")
     try:
         return parametro_fecha(valor, nombre)
     except Exception:
-        raise error_campo(nombre, 'debe tener el formato YYYY-MM-DD')
+        raise error_campo(nombre, "debe tener el formato YYYY-MM-DD")
+
 
 def campo_hora(body, nombre,requerido, actual=None):
     if nombre not in body:
         if requerido:
-            raise error_campo(nombre, 'es obligatorio')
+            raise error_campo(nombre, "es obligatorio")
         return actual
     valor = body[nombre]
     if not isinstance(valor, str):
-        raise error_campo(nombre, 'debe ser un texto con formato HH:00:00')
+        raise error_campo(nombre, "debe ser un texto con formato HH:00:00")
     try:
         return parametro_hora(valor, nombre)
     except Exception:
-        raise error_campo(nombre, 'debe tener el formato HH:00:00 (hora en punto)')
+        raise error_campo(nombre, "debe tener el formato HH:00:00 (hora en punto)")
+
 
 def parametro_fecha(valor, nombre):
     if not _PATRON_FECHA.match(valor):

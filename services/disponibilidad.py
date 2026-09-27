@@ -17,7 +17,7 @@ def validador_reserva_nueva(id_cancha, id_socio, inicio, fin):
         raise ApiError(
             409,
             "CANCHA_NO_DISPONIBLE",
-            "Está cancha no está disponible",
+            "Esta cancha no está disponible",
             "Ya existe una reserva confirmada para esa cancha que se superpone con ese intervalo",
         )
 

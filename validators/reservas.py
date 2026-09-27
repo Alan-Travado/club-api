@@ -11,7 +11,6 @@ from validators.comunes import (
     validar_parametros_permitidos,
     campo_entero_positivo,
 )
-from validators.socios import CAMPOS_CREATE
 
 PARAMS_LISTADO = {
     "id_cancha",
