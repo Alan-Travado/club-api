@@ -30,4 +30,5 @@ def establecer_estado(id_reserva):
             "Este endpoint no admite parámetros de consulta",
         )
     estado = validador.validar_cambio_estado(request.get_json(silent=True))
-    return jsonify(service.cambiar_estado(id_reserva, estado)), 200
+    service.cambiar_estado(id_reserva, estado)
+    return "", 204

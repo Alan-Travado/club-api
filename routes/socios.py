@@ -38,5 +38,5 @@ def actualizar_socio(id_socio):
     body = request.get_json(silent=True)
     actual = service.obtener_socio(id_socio)
     datos = validador.validar_actualizacion(body, actual)
-    actualizado = service.actualizar_socio(id_socio, datos)
-    return jsonify(actualizado), 200
+    service.actualizar_socio(id_socio, datos)
+    return "", 204
