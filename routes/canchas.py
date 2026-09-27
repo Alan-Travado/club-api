@@ -19,6 +19,26 @@ def listar_canchas():
     }
     return jsonify(respuesta), 200
 
+@bp.get("/canchas/disponibles")
+def listar_canchas_disponibles():
+    filtros, inicio, fin, limit, offset = validador.validar_disponibilidad(
+        request.args
+    )
+
+    canchas, total = service.listar_canchas_disponibles(
+        filtros,
+        inicio,
+        fin,
+        limit,
+        offset,
+    )
+
+    respuesta = {
+        "canchas": canchas,
+        "_links": armar_links(limit, offset, total),
+    }
+
+    return jsonify(respuesta), 200
 
 @bp.post("/canchas")
 def crear_cancha():
