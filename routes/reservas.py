@@ -19,6 +19,19 @@ def listar_reservas():
     ), 200
 
 
+@bp.post("/reservas")
+def crear_reserva():
+    body = request.get_json(silent=True)
+    datos = validador.validar_creacion(body)
+    nueva = service.crear_reserva(datos)
+
+    return jsonify(nueva), 201
+
+@bp.get("/reservas/<int:id_reserva>")
+def obtener_reserva(id_reserva):
+    return jsonify(service.obtener_reserva(id_reserva)), 200
+
+
 @bp.put("/reservas/<int:id_reserva>/estado")
 def establecer_estado(id_reserva):
     validador.validar_id(id_reserva)
@@ -30,5 +43,8 @@ def establecer_estado(id_reserva):
             "Este endpoint no admite parámetros de consulta",
         )
     estado = validador.validar_cambio_estado(request.get_json(silent=True))
+
     service.cambiar_estado(id_reserva, estado)
     return "", 204
+
+

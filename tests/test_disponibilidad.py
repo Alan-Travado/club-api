@@ -19,6 +19,11 @@ def test_validador_reserva_nueva_sin_conflictos(monkeypatch):
         lambda *args: False,
     )
 
+    monkeypatch.setattr(
+    "services.disponibilidad.repo_reservas.existe_superposicion_en_bloqueo",
+    lambda *args: False,
+)
+
     validador_reserva_nueva(
         2,
         1,
