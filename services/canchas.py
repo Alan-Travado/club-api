@@ -20,3 +20,21 @@ def listar_canchas(filtros, limit, offset):
 
 def crear_cancha(datos):
     return repo.crear(datos)
+
+def actualizar_cancha(id_cancha, datos):
+    obtener_cancha(id_cancha)
+    return repo.actualizar(id_cancha, datos)
+
+
+def eliminar_cancha(id_cancha):
+    obtener_cancha(id_cancha)
+
+    if repo.contar_reservas(id_cancha) > 0:
+        raise ApiError(
+            409,
+            "CANCHA_CON_RESERVAS",
+            "No se puede eliminar la cancha",
+            f"La cancha con id {id_cancha} tiene reservas asociadas",
+        )
+
+    repo.eliminar(id_cancha)

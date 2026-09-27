@@ -85,3 +85,52 @@ def crear(datos):
     finally:
         conn.close()
     return obtener_por_id(nuevo_id)
+
+def contar_reservas(id_cancha):
+    conn = get_connection()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT COUNT(*) AS total FROM reservas WHERE id_cancha = %s",
+            (id_cancha,),
+        )
+        total = cursor.fetchone()["total"]
+    finally:
+        conn.close()
+    return total
+
+def actualizar(id_cancha, datos):
+    columnas = []
+    valores = []
+
+    for campo, valor in datos.items():
+        columnas.append(f"{campo} = %s")
+        valores.append(valor)
+
+    valores.append(id_cancha)
+
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"UPDATE canchas SET {', '.join(columnas)} WHERE id = %s",
+            valores,
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    return obtener_por_id(id_cancha)
+
+
+def eliminar(id_cancha):
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM canchas WHERE id = %s",
+            (id_cancha,),
+        )
+        conn.commit()
+    finally:
+        conn.close()

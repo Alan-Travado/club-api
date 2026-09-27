@@ -67,3 +67,38 @@ def validar_creacion(body):
         "techada": techada,
         "activa": activa,
     }
+
+def validar_actualizacion(body):
+    validar_cuerpo(body, CAMPOS_UPDATE)
+
+    datos = {}
+
+    if "nombre" in body:
+        datos["nombre"] = campo_texto_no_vacio(
+            body,
+            "nombre",
+            requerido=False,
+        )
+
+    if "precio_hora" in body:
+        datos["precio_hora"] = campo_entero_positivo(
+            body,
+            "precio_hora",
+            requerido=False,
+        )
+
+    if "techada" in body:
+        datos["techada"] = campo_booleano(
+            body,
+            "techada",
+            actual=None,
+        )
+
+    if "activa" in body:
+        datos["activa"] = campo_booleano(
+            body,
+            "activa",
+            actual=None,
+        )
+
+    return datos
