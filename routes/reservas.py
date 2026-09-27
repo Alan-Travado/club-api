@@ -4,6 +4,7 @@ from errors import ApiError
 from paginacion import armar_links
 from services import reservas as service
 from validators import reservas as validador
+from validators.comunes import validar_sin_parametros
 
 bp = Blueprint("reservas", __name__)
 
@@ -21,6 +22,7 @@ def listar_reservas():
 
 @bp.post("/reservas")
 def crear_reserva():
+    validar_sin_parametros(request.args)
     body = request.get_json(silent=True)
     datos = validador.validar_creacion(body)
     nueva = service.crear_reserva(datos)
@@ -29,6 +31,7 @@ def crear_reserva():
 
 @bp.get("/reservas/<int:id_reserva>")
 def obtener_reserva(id_reserva):
+    validar_sin_parametros(request.args)
     return jsonify(service.obtener_reserva(id_reserva)), 200
 
 

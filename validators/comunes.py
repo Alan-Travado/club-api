@@ -47,6 +47,8 @@ def validar_parametros_permitidos(args, permitidos):
             f"Parámetros no admitidos: {', '.join(desconocidos)}",
         )
 
+def validar_sin_parametros(args):
+    validar_parametros_permitidos(args, set())
 
 def validar_cuerpo(body, permitidos):
     if not isinstance(body, dict) or not body:
@@ -214,7 +216,3 @@ def combinar_fecha_hora(fecha, hora):
 
 def hora_a_time(hora):
     return time(hour=hora)
-
- 
-def combinar_fecha_hora(fecha, hora):
-    return datetime(fecha.year, fecha.month, fecha.day, hora, tzinfo=ZONA_CLUB)

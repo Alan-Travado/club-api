@@ -122,16 +122,25 @@ def actualizar(id_cancha, datos):
 
     return obtener_por_id(id_cancha)
 
-
 def eliminar(id_cancha):
     conn = get_connection()
     try:
         cursor = conn.cursor()
+
+        cursor.execute(
+            "DELETE FROM bloqueos WHERE id_cancha = %s",
+            (id_cancha,),
+        )
+
         cursor.execute(
             "DELETE FROM canchas WHERE id = %s",
             (id_cancha,),
         )
+
         conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 

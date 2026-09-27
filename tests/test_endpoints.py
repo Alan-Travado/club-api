@@ -126,3 +126,104 @@ def test_canchas_disponibles_vacio_devuelve_200(client, monkeypatch):
 
     assert response.status_code == 200
     assert response.get_json()["canchas"] == []
+
+def test_canchas_disponibles_filtro_techada(client, monkeypatch):
+    filtros_recibidos = {}
+
+    def listar_fake(filtros, inicio, fin, limit, offset):
+        filtros_recibidos.update(filtros)
+        return [], 0
+
+    monkeypatch.setattr(
+        "routes.canchas.service.listar_canchas_disponibles",
+        listar_fake,
+    )
+
+    response = client.get(
+        "/canchas/disponibles"
+        "?fecha=2026-10-20"
+        "&hora_inicio=18:00:00"
+        "&hora_fin=20:00:00"
+        "&techada=true"
+    )
+
+    assert response.status_code == 200
+    assert filtros_recibidos["techada"] is True
+
+def test_delete_cancha_204(client, monkeypatch):
+    monkeypatch.setattr(
+        "routes.canchas.service.eliminar_cancha",
+        lambda id_cancha: None,
+    )
+
+    response = client.delete("/canchas/7")
+
+    assert response.status_code == 204
+    assert response.data == b""
+
+def test_deportes_rechaza_parametros_desconocidos(client):
+    response = client.get("/deportes?foo=bar")
+
+    assert response.status_code == 400
+    assert response.get_json()["errors"][0]["code"] == "PARAMETRO_DESCONOCIDO"
+
+@pytest.mark.parametrize(
+    "metodo,ruta",
+    [
+        ("POST", "/canchas?foo=bar"),
+        ("GET", "/canchas/1?foo=bar"),
+        ("PATCH", "/canchas/1?foo=bar"),
+        ("DELETE", "/canchas/1?foo=bar"),
+    ],
+)
+def test_canchas_rechazan_parametros_desconocidos(client, metodo, ruta):
+    response = client.open(ruta, method=metodo)
+
+    assert response.status_code == 400
+    assert response.get_json()["errors"][0]["code"] == "PARAMETRO_DESCONOCIDO"
+
+@pytest.mark.parametrize(
+    "metodo,ruta",
+    [
+        ("POST", "/socios?foo=bar"),
+        ("GET", "/socios/1?foo=bar"),
+        ("PATCH", "/socios/1?foo=bar"),
+    ],
+)
+def test_socios_rechazan_parametros_desconocidos(client, metodo, ruta):
+    response = client.open(ruta, method=metodo)
+
+    assert response.status_code == 400
+    assert response.get_json()["errors"][0]["code"] == "PARAMETRO_DESCONOCIDO"
+
+@pytest.mark.parametrize(
+    "metodo,ruta",
+    [
+        ("POST", "/reservas?foo=bar"),
+        ("GET", "/reservas/1?foo=bar"),
+    ],
+)
+def test_reservas_rechazan_parametros_desconocidos(client, metodo, ruta):
+    response = client.open(ruta, method=metodo)
+
+    assert response.status_code == 400
+    assert response.get_json()["errors"][0]["code"] == "PARAMETRO_DESCONOCIDO"
+
+@pytest.mark.parametrize(
+    "metodo,ruta",
+    [
+        ("POST", "/bloqueos?foo=bar"),
+        ("DELETE", "/bloqueos/1?foo=bar"),
+    ],
+)
+def test_bloqueos_rechazan_parametros_desconocidos(client, metodo, ruta):
+    response = client.open(ruta, method=metodo)
+
+    assert response.status_code == 400
+    assert response.get_json()["errors"][0]["code"] == "PARAMETRO_DESCONOCIDO"
+
+def test_reservas_recurrentes_rechaza_parametros_desconocidos(client):
+    response = client.post("/reservas/recurrentes?foo=bar")
+
+    assert response.status_code == 400
+    assert response.get_json()["errors"][0]["code"] == "PARAMETRO_DESCONOCIDO"
