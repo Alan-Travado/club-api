@@ -53,18 +53,27 @@ Los scripts `init_db.sql` y `datos_prueba.sql` se ejecutan solos la primera vez 
 
 Para frenar todo: `Ctrl + C`, o `docker compose down` para apagar los contenedores.
 
-Instalación y ejecución (sin Docker, alternativa)
-Crear el entorno virtual e instalar dependencias:
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-Crear una base MySQL local y un usuario, y cargar los scripts:
-   mysql -u <usuario> -p <base> < init_db.sql
-   mysql -u <usuario> -p <base> < datos_prueba.sql
-Completar .env (copiado de .env.example) con los datos de conexión. En este modo no hace falta DB_ROOT_PASSWORD, esa variable solo la usa el contenedor de Docker.
-Ejecutar:
-   python3 app.py
-   
+## Instalación y ejecución (sin Docker, alternativa)
+
+1. Crear el entorno virtual e instalar dependencias:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+2. Crear una base MySQL local y un usuario, y cargar los scripts:
+```bash
+mysql -u <usuario> -p <base> < init_db.sql
+mysql -u <usuario> -p <base> < datos_prueba.sql
+```
+3. Completar .env (copiado de .env.example) con los datos de conexión. 
+En este modo no hace falta DB_ROOT_PASSWORD, esa variable solo la usa el contenedor de Docker.
+
+4. Ejecutar:
+```bash
+python3 app.py
+```
 ## Endpoints principales
 
 ## Endpoints
