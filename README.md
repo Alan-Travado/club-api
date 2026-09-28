@@ -10,6 +10,8 @@ API REST desarrollada en Python y Flask para la administracion de canchas, socio
 * Miembro 4: Modulo de socios
 * Miembro 5: Modulo de reservas
 * Miembro 6: Estados, paginacion y hateoas
+* Miembro 7: Bloqueos por mantenimiento (extensión opcional)
+* Miembro 8: Reservas recurrentes (extensión opcional)
 * Miembro 9: Testing, OpenAPI y documentacion
 
  ## Tecnologias utilizadas
@@ -34,7 +36,11 @@ Requiere tener Docker y Docker Compose instalados.
 ```
 2. Crear el archivo de variables de entorno a partir de la plantilla:
 ```bash
-   cp .env.example .env
+   cp .env.example .env 
+   Completar en .env las dos contraseñas (ninguna puede quedar vacía, o el contenedor de la base no arranca):
+
+   DB_PASSWORD: la contraseña acordada por el equipo para el usuario club_user (la que usa la API para conectarse).
+   DB_ROOT_PASSWORD: la contraseña del usuario administrador de MySQL. No la usa la API, solo la usa MySQL al inicializarse; puede ser cualquier valor y no hace      falta que coincida entre integrantes del equipo.
 ```
    Completar `DB_PASSWORD` en `.env` con la contraseña acordada por el equipo.
 3. Levantar todo (API + MySQL):
@@ -47,6 +53,18 @@ Los scripts `init_db.sql` y `datos_prueba.sql` se ejecutan solos la primera vez 
 
 Para frenar todo: `Ctrl + C`, o `docker compose down` para apagar los contenedores.
 
+Instalación y ejecución (sin Docker, alternativa)
+Crear el entorno virtual e instalar dependencias:
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+Crear una base MySQL local y un usuario, y cargar los scripts:
+   mysql -u <usuario> -p <base> < init_db.sql
+   mysql -u <usuario> -p <base> < datos_prueba.sql
+Completar .env (copiado de .env.example) con los datos de conexión. En este modo no hace falta DB_ROOT_PASSWORD, esa variable solo la usa el contenedor de Docker.
+Ejecutar:
+   python3 app.py
+   
 ## Endpoints principales
 
 ## Endpoints
