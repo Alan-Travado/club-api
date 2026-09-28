@@ -1,3 +1,6 @@
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 USE club_deportivo;
 
 INSERT INTO canchas (nombre, id_deporte, precio_hora, techada, activa) VALUES

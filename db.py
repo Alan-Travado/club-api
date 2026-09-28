@@ -8,6 +8,8 @@ load_dotenv()
 
 def get_connection():
     return mysql.connector.connect(
+        charset="utf8mb4",
+        use_unicode=True,
         host=os.getenv("DB_HOST"),
         port=int(os.getenv("DB_PORT", 3306)),
         user=os.getenv("DB_USER"),
