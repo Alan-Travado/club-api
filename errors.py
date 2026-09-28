@@ -3,15 +3,23 @@ from werkzeug.exceptions import HTTPException
 
 
 class ApiError(Exception):
-    def __init__(self, status, code, message, description):
+    def __init__(
+            self, 
+            status, 
+            code, 
+            message, 
+            description, 
+            conflictos=None
+    ):
         super().__init__(message)
         self.status = status
         self.code = code
         self.message = message
         self.description = description
+        self.conflictos = conflictos
 
 
-def error_response(status, code, message, description, level="error"):
+def error_response(status, code, message, description, level="error", conflictos=None):
     body = {
         "errors": [
             {
@@ -22,13 +30,15 @@ def error_response(status, code, message, description, level="error"):
             }
         ]
     }
+    if conflictos is not None:
+        body["conflictos"] = conflictos
     return jsonify(body), status
 
 
 def registrar_manejadores(app):
     @app.errorhandler(ApiError)
     def manejar_api_error(e):
-        return error_response(e.status, e.code, e.message, e.description)
+        return error_response(e.status, e.code, e.message, e.description, conflictos=e.conflictos)
 
     @app.errorhandler(HTTPException)
     def manejar_http(e):
